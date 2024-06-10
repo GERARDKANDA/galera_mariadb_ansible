@@ -1,0 +1,73 @@
+---
+
+- name: ensure NIC specified in 'galera_cluster_bind_interface' exists
+  ansible.builtin.assert:
+    that: galera_cluster_bind_interface in ansible_interfaces
+    fail_msg: >-
+      The NIC name "{{ galera_cluster_bind_interface }}" specified in
+      "galera_cluster_bind_interface" does not exist on the target host.
+      Available interfaces are: "{{ ansible_interfaces | join(',') }}".
+  tags:
+    - install
+    - config
+
+- name: When mariadb_sst_username is unix_socket, the mariadb_sst_password should not be set
+  ansible.builtin.assert:
+    that:
+      - mariadb_sst_password == ""
+    fail_msg: >-
+      When the mariadb_sst_user_plugin is set to unix_socket
+      the mariadb_sst_password should not be set because it is ignored.
+  when: mariadb_sst_user_plugin == "unix_socket"
+  tags:
+    - install
+    - config
+
+- name: When mariadb_sst_username is mysql_native_password, mariadb_sst_password should also be set
+  ansible.builtin.assert:
+    that:
+      - mariadb_sst_password != ""
+    fail_msg: >-
+      When the mariadb_sst_user_plugin is set to mysql_native_password
+      the mariadb_sst_password should also be set.
+  when: mariadb_sst_user_plugin == "mysql_native_password"
+  tags:
+    - install
+    - config
+
+- name: Check mariadb_version on target system
+  ansible.builtin.command: "mariadb -V"
+  check_mode: false
+  register: mariadb_version_check
+  failed_when: '"mariadb" not in mariadb_version_check.stdout and mariadb_version_check.rc == 0'
+  changed_when: not 'mariadb_version_check.rc == 0'
+  when: not mariadb_upgrade|bool
+  tags:
+    - install
+    - config
+
+- name: Extract MariaDB version
+  set_fact:
+    mariadb_version_checked: "{{ mariadb_version_check.stdout.split(' ')[5] }}"
+  check_mode: false
+  when: not mariadb_upgrade|bool and mariadb_version_check.rc == 0
+  tags:
+    - install
+    - config
+
+- name:
+  ansible.builtin.debug:
+    msg: "Installed {{ mariadb_version_checked }} - mariadb_version: {{ mariadb_version }}"
+  when: not mariadb_upgrade|bool and mariadb_version_check.rc == 0
+
+- name: Verify the expected mariadb_version
+  ansible.builtin.assert:
+    that: 'mariadb_version_checked.startswith("{{ mariadb_version }}")'
+    fail_msg: >-
+      The mariadb_version "{{ mariadb_version }}" doesn't match the one
+      installed on the system: {{ mariadb_version_checked }}.
+      Use the correct mariadb_version or set mariadb_upgrade: True
+  when: not mariadb_upgrade|bool and mariadb_version_check.rc == 0
+  tags:
+    - install
+    - config

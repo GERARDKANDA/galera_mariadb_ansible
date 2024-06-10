@@ -1,0 +1,35 @@
+---
+galaxy_info:
+  author: Larry Smith Jr.
+  description: An ansible role to install/configure a [MariaDB-Galera Cluster](https://mariadb.com/kb/en/mariadb/what-is-mariadb-galera-cluster/)
+  role_name: mariadb_galera_cluster
+  namespace: mrlesmithjr
+
+  license: MIT
+
+  min_ansible_version: 9.1
+  platforms:
+    - name: EL
+      versions:
+        - 7
+        - 8
+        - 9
+    - name: Ubuntu
+      versions:
+        - xenial
+        - bionic
+        - focal
+        - jammy
+    - name: Debian
+      versions:
+        - stretch
+        - buster
+        - bullseye
+    - name: Fedora
+      versions:
+        - 39
+
+  galaxy_tags:
+    - database
+    - sql
+dependencies: []
