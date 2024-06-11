@@ -19,23 +19,18 @@
     galera_mysql_first_node: ip-172.26.4.253
     galera_cluster_nodes: "{{ groups['galera-cluster-nodes'] }}"
     galera_cluster_bind_interface: ens5
+    #mariadb_upgrade: true  # Add this line to allow upgrading MariaDB
 
   tasks:
-    - name: Create lending_service database
+    - name: Create db_nations database
       mysql_db:
-        name: lending_service
+        name: db_nations
 
     - name: Copy schema file to target hosts
       copy:
-        src: /home/gkipngok/ansible-mariadb-galera/db_schema/sample_schema.sql  # Update this path to the location of your schema file on the Ansible control machine
-        dest: /home/gkipngok/sample_schema.sql
+        src: /home/gkipngok/ansible-mariadb-galera/db_schema/nation.sql  # Update this path to the location of your schema file on the Ansible control machine
+        dest: /tmp/nation.sql
+        mode: '0644'
 
-    - name: Restore schema
-      mysql_db:
-        name: lending_service
-        state: import
-        target: /home/gkipngok/sample_schema.sql
-        login_host: localhost  # Use the inventory hostname of the current target host
-        login_user: root  # Assuming you're using root user for MySQL tasks
-        login_password: ""  # Assuming empty password for root user
-        delegate_to: "{{ inventory_hostname }}"
+    - name: Restore schema from backup file using MySQL client
+      shell: mysql -u root db_nations < /tmp/nation.sql
