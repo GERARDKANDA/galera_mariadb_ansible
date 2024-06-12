@@ -40,13 +40,17 @@
       service:
         name: mysql
         state: started
-    - name: Restore schema from backup file using mysql_db module
-      mysql_db:
-        name: lending_service
-        state: import
-        target: /tmp/sample_schema.sql
-        login_user: root
-        login_password: ""
+
+    - name: Restore schema from backup file using MySQL client
+      shell: mysql -u root lending_service < /tmp/sample_schema.sql
+
+    #- name: Restore schema from backup file using mysql_db module
+     # mysql_db:
+      #  name: lending_service
+       # state: import
+        #target: /tmp/sample_schema.sql
+        #login_user: root
+        #login_password: ""
 
     #- name: Check MySQL connection
      # shell: mysql -u root -p'' -h localhost -e "SHOW DATABASES;"
