@@ -1,0 +1,6 @@
+[loadbalancer]
+35.153.140.130 ansible_host=35.153.140.130 ansible_user=gkipngok ansible_ssh_pass=!Kipngok@@ ansible_become_pass=!Kipngok@@
+
+[galera]
+34.229.207.16 ansible_host=34.229.207.16 ansible_user=gkipngok ansible_ssh_pass=!Kipngok@@ ansible_become_pass=!Kipngok@@
+3.92.90.244 ansible_host=3.92.90.244 ansible_user=gkipngok ansible_ssh_pass=!Kipngok@@ ansible_become_pass=!Kipngok@@

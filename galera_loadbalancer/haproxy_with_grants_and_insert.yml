@@ -1,0 +1,61 @@
+---
+- name: Configure HAProxy load balancer for Galera
+  hosts: loadbalancer
+  become: yes
+  tasks:
+    - name: Install HAProxy
+      apt:
+        name: haproxy
+        state: present
+
+    - name: Configure HAProxy
+      template:
+        src: haproxy.cfg.j2
+        dest: /etc/haproxy/haproxy.cfg
+        owner: root
+        group: root
+        mode: '0644'
+
+    - name: Restart HAProxy
+      service:
+        name: haproxy
+        state: restarted
+        enabled: yes
+
+- name: Configure MariaDB permissions and simulate insert
+  hosts: galera
+  become: yes
+  tasks:
+    - name: Allow access from HAProxy server
+      community.mysql.mysql_user:
+        name: haproxy_user
+        host: 35.153.140.130
+        password: Gerard1234
+        priv: '*.*:ALL,GRANT'
+        state: present
+        login_user: root
+        login_password: Gerard1234
+
+    - name: Create a database
+      community.mysql.mysql_db:
+        name: test_db
+        state: present
+        login_user: root
+        login_password: Gerard1234
+
+    - name: Create a table
+      community.mysql.mysql_query:
+        login_user: root
+        login_password: Gerard1234
+        query: >
+          CREATE TABLE IF NOT EXISTS test_db.test_table (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            name VARCHAR(255) NOT NULL
+          );
+
+    - name: Insert data into the table
+      community.mysql.mysql_query:
+        login_user: root
+        login_password: Gerard1234
+        query: >
+          INSERT INTO test_db.test_table (name) VALUES ('test_name');
